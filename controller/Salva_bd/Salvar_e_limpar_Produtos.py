@@ -1,9 +1,11 @@
 from PyQt5.QtWidgets import QMessageBox
 from controller.Referencias_firebase.Cadastro_NomeProdutos_firebase import CadastroNomeProdutosFirebase
+from controller.Referencias_firebase.Cadastro_Categorias_firebase import CadastroCategoriaFirebase
 from model.model_nome_produtos import Produto
 
-class SL_BD_Produtos:
+class SL_BD_Produtos(CadastroCategoriaFirebase):
     def __init__(self, parent=None):
+        super().__init__()
         self.parent_window = parent
         self.controller = CadastroNomeProdutosFirebase()
         self.produto = Produto()
@@ -11,14 +13,14 @@ class SL_BD_Produtos:
     def carregar_categorias(self):
         try:
             if hasattr(self, 'combo_categoria'):
-                categorias = self.controller.obter_categorias()
+                categorias = self.obter_nomes_categorias()
                 self.combo_categoria.clear()
                 for cat_id, nome in categorias:
                     self.combo_categoria.addItem(nome, cat_id)
         except Exception as e:
             QMessageBox.critical(
                 self.parent_window,
-                "Erro", 
+                "Erro",
                 f"Falha ao carregar categorias:\n{str(e)}"
             )
 
@@ -31,8 +33,7 @@ class SL_BD_Produtos:
             if not imagem_base64:
                 raise ValueError("Selecione uma imagem!")
 
-            self.produto.set_nome_produto(nome)
-            self.produto.set_categoria_id(categoria_id)
+            self.produto.set_nome_produto(nome.strip())
             self.produto.set_imagem_produto(imagem_base64)
 
             if self.controller.salvar_produto(self.produto, categoria_id):
@@ -44,13 +45,42 @@ class SL_BD_Produtos:
                 self.limpar_campos()
                 return True
             else:
-                raise Exception("Falha ao comunicar com o servidor")
+                raise Exception("Falha na comunicação com o servidor")
+
+        except ValueError as ve:
+            erro = str(ve)
+            if "Limite de 10" in erro:
+                QMessageBox.critical(
+                    self.parent_window,
+                    "Limite Atingido",
+                    "❌ Limite de 10 produtos por categoria!\nNão é possível cadastrar mais."
+                )
+            elif "Nome já existe" in erro:
+                QMessageBox.warning(
+                    self.parent_window,
+                    "Nome Duplicado",
+                    "⚠️ Já existe um produto com este nome na categoria selecionada!"
+                )
+            elif "Imagem já cadastrada" in erro:
+                QMessageBox.warning(
+                    self.parent_window,
+                    "Imagem Repetida",
+                    "🖼️ Esta imagem já está em uso nesta categoria!"
+                )
+            else:
+                QMessageBox.warning(
+                    self.parent_window,
+                    "Validação",
+                    f"⚠️ {erro}"
+                )
+            self.limpar_campos()
+            return False
 
         except Exception as e:
             QMessageBox.critical(
                 self.parent_window,
-                "Erro",
-                f"Falha ao salvar produto:\n{str(e)}"
+                "Erro Crítico",
+                f"⛔ Falha ao salvar produto:\n{str(e)}"
             )
             self.limpar_campos()
             return False

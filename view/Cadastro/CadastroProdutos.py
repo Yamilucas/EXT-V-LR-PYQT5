@@ -1,157 +1,71 @@
 import sys
 import os
-from PyQt5.QtWidgets import ( QVBoxLayout, QLineEdit,QComboBox, QMessageBox)
+from PyQt5.QtWidgets import QVBoxLayout, QLineEdit, QComboBox
+from PyQt5.QtCore import Qt
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from controller.Vincular_produtos_firebase import VincularProdutosFirebase
-from model.model_vincular import ProdutoVinculado
 from recursivas.layouts.Areas_padrao_layout import BaseLayout
+from recursivas.layouts.imagem_selecionar import GerenciadorImagem
 from recursivas.layouts.formulario_layout import FormularioLayout
-from recursivas.layouts.botoes_cadastro import BotoesCadastro 
+from recursivas.layouts.botoes_cadastro import BotoesCadastro
+from controller.Salva_bd.Salvar_e_limpar_Produtos import SL_BD_Produtos  
 
-class CadastroProdutosView(BaseLayout, FormularioLayout):
+class CadastroProdutosView(BaseLayout, FormularioLayout, SL_BD_Produtos):
     def __init__(self, parent=None):
         super().__init__()
+        SL_BD_Produtos.__init__(self, parent) 
         self.parent_window = parent
-        self.controller = VincularProdutosFirebase()
-        self.radio_group = None
+        self.gerenciador_imagem = GerenciadorImagem(self)
         self.initUI()
-        self.carregar_empresas()
-        self.carregar_categorias()
-
+        
     def initUI(self):
-        main_layout = QVBoxLayout()
+        produtos_layout = QVBoxLayout()
         
         # Área Superior
-        self.criar_area_superior(main_layout, "Vinculação de Produtos")
+        self.criar_area_superior(produtos_layout, "Cadastro de Produtos")
         
         # Área de Conteúdo
         content_widget, content_layout = self.criar_area_conteudo(
-            main_layout,
-            subtitulo="Relacione o produto ao mercado"
+            produtos_layout, 
+            subtitulo="Preencha os dados do produto"
         )
+        
+        # Área da Imagem
+        imagem_container = self.gerenciador_imagem.criar_area_imagem()
+        content_layout.addWidget(imagem_container, alignment=Qt.AlignCenter)
 
-        # Campos do formulário
+        # Campos do Formulário
         form_layout = QVBoxLayout()
         form_layout.setSpacing(15)
 
-        # Combobox Empresas
-        self.combo_empresa = QComboBox()
-       
-        form_layout.addLayout(self.criar_linha("Empresa:", self.combo_empresa))
+        # Nome do Produto
+        self.campo_nome = QLineEdit()
+        self.campo_nome.setPlaceholderText("Digite o nome do produto")
+        form_layout.addLayout(self.criar_linha("Nome do Produto:", self.campo_nome))
 
-        # Combobox Categorias
+        # Combo de Categorias
         self.combo_categoria = QComboBox()
-        self.combo_categoria.currentIndexChanged.connect(self.carregar_produtos_por_categoria)
         form_layout.addLayout(self.criar_linha("Categoria:", self.combo_categoria))
-
-        # Combobox Produtos
-        self.combo_produto = QComboBox()
-        form_layout.addLayout(self.criar_linha("Produto:", self.combo_produto))
-
-        # Campo Preço
-        self.campo_preco = QLineEdit()
-        self.campo_preco.setPlaceholderText("R$ 0.00")
-        form_layout.addLayout(self.criar_linha("Preço:", self.campo_preco))
-
-        # RadioButtons Promoção usando o novo método
-        linha_promo, self.radio_group = self.criar_linha_radio(
-            "Promoção:",
-            [
-                {'texto': 'Sim', 'dados': True},
-                {'texto': 'Não', 'dados': False, 'checked': True}
-            ]
-        )
-        form_layout.addLayout(linha_promo)
 
         content_layout.addLayout(form_layout)
 
-        content_layout.addSpacing(10)
-
-       # Botões usando classe reutilizável
-        botoes = BotoesCadastro(self.salvar_dados, self.limpar_campos)
-        button_container = botoes.criar_botoes()
-        content_layout.addLayout(button_container)
+        # Botões (conectados aos métodos herdados)
+        botoes = BotoesCadastro(
+            lambda: self.salvar_produto(
+                self.campo_nome.text().strip(),
+                self.combo_categoria.currentData(),
+                self.gerenciador_imagem.imagem_base64
+            ),
+            self.limpar_campos
+        )
+        content_layout.addLayout(botoes.criar_botoes())
 
         # Área Inferior
         self.criar_area_inferior(
-            main_layout,
-            parent_window=self.parent_window,
-            mostrar_menu_principal=True
-        )
+         produtos_layout,
+         parent_window=self.parent_window,
+         mostrar_menu_principal=True,
+       
+)
 
-        self.setLayout(main_layout)
-
-    def carregar_empresas(self):
-        try:
-            empresas = self.controller.obter_empresas()
-            self.combo_empresa.clear()
-            for empresa_id, empresa_nome in empresas:
-                self.combo_empresa.addItem(empresa_nome, empresa_id)
-        except Exception as e:
-            QMessageBox.critical(self, "Erro", f"Falha ao carregar empresas:\n{str(e)}")
-
-    def carregar_categorias(self):
-        try:
-            categorias = self.controller.obter_categorias()
-            self.combo_categoria.clear()
-            for categoria_id, categoria_nome in categorias:
-                self.combo_categoria.addItem(categoria_nome, categoria_id)
-            
-            if categorias:
-                self.carregar_produtos_por_categoria()
-        except Exception as e:
-            QMessageBox.critical(self, "Erro", f"Falha ao carregar categorias:\n{str(e)}")
-
-    def carregar_produtos_por_categoria(self):
-        try:
-            categoria_id = self.combo_categoria.currentData()
-            if not categoria_id:
-                return
-
-            produtos = self.controller.obter_produtos_por_categoria(categoria_id)
-            self.combo_produto.clear()
-            for produto_id, produto_nome in produtos:
-                self.combo_produto.addItem(produto_nome, produto_id)
-        except Exception as e:
-            QMessageBox.critical(self, "Erro", f"Falha ao carregar produtos:\n{str(e)}")
-
-    def salvar_dados(self):
-        try:
-            empresa_id = self.combo_empresa.currentData()
-            categoria_id = self.combo_categoria.currentData()
-            produto_id = self.combo_produto.currentData()
-            preco = self.campo_preco.text()
-            
-            if not all([empresa_id, categoria_id, produto_id, preco]):
-                raise ValueError("Preencha todos os campos obrigatórios!")
-
-            # Obter valor do radio button
-            promocao = next((rb.property('dados') for rb in self.radio_group.buttons() if rb.isChecked()), False)
-
-            produto = ProdutoVinculado()
-            produto.set_empresa_id(empresa_id)
-            produto.set_categoria_id(categoria_id)
-            produto.set_produto_id(produto_id)
-            produto.set_preco(float(preco))
-            produto.set_promocao(promocao)
-
-            if self.controller.vincular_produto(produto):
-                QMessageBox.information(self, "Sucesso", "Vinculação realizada!")
-                self.limpar_campos()
-            else:
-                raise Exception("Erro na comunicação com o servidor")
-
-        except ValueError as ve:
-            QMessageBox.warning(self, "Aviso", str(ve))
-        except Exception as e:
-            QMessageBox.critical(self, "Erro", f"Falha crítica:\n{str(e)}")
-
-    def limpar_campos(self):
-        self.campo_preco.clear()
-        self.combo_categoria.setCurrentIndex(0)
-        self.combo_empresa.setCurrentIndex(0)
-        self.carregar_produtos_por_categoria()
-        for rb in self.radio_group.buttons():
-            if rb.property('dados') == False:
-                rb.setChecked(True)
-                break
+        self.setLayout(produtos_layout)
+        self.carregar_categorias()  

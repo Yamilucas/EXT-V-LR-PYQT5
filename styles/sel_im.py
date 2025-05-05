@@ -38,3 +38,32 @@ def obter_estilo_botao_circular():
             background-color: #666666;
         }
     """
+
+def obter_estilo_logo_empresa():
+    return """
+        QLabel#logo_empresa {
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            background-color: white;
+            padding: 2px;
+        }
+        QLabel#logo_empresa:hover {
+            border-color: #FFA500;
+            background-color: rgba(255, 165, 0, 0.1);
+        }
+        QLabel#logo_empresa_selecionada {
+            border: 3px solid #FFA500;
+            background-color: rgba(255, 165, 0, 0.1);
+        }
+    """
+
+def obter_estilo_preco():
+    return """
+        QLabel#preco_label {
+            color: #FFA500;
+            font: bold 16px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 5px;
+            padding: 5px 10px;
+        }
+    """
