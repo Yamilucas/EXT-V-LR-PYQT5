@@ -1,8 +1,6 @@
 import sys
 import os
 from PyQt5.QtWidgets import QVBoxLayout
-from PyQt5.QtCore import Qt
-
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from styles.Estilo_botoes_de_sellecao import obter_estilo
 from recursivas.layouts.BotaoUtils import BotaoUtils  
@@ -29,8 +27,8 @@ class CadastroView(BaseLayout):
         botoes = [
             {"texto": "Concorrentes", "funcao": lambda: self.parent_window.navigate_to('cadastro_empresas')},
             {"texto": "Categorias", "funcao": lambda: self.parent_window.navigate_to('cadastro_categorias')},
-            {"texto": "Nome de um Produto", "funcao": lambda: self.parent_window.navigate_to('cadastro_produtos_gerais')},
-            {"texto": "Vinculação de Produtos", "funcao": lambda: self.parent_window.navigate_to('cadastro_produtos')}
+            {"texto": "Produtos", "funcao": lambda: self.parent_window.navigate_to('cadastro_produtos')},
+            {"texto": "Vinculação de Produtos", "funcao": lambda: self.parent_window.navigate_to('cadastro_produtos_vinculacao')}
         ]
 
         BotaoUtils.criar_botoes(

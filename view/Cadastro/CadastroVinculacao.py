@@ -17,14 +17,14 @@ class CadastroVincularView(BaseLayout, FormularioLayout, SL_BD_Vincular):
         self.carregar_categorias()  
 
     def initUI(self):
-        main_layout = QVBoxLayout()
+        vincular_layout = QVBoxLayout()
         
         # Área Superior
-        self.criar_area_superior(main_layout, "Vinculação de Produtos")
+        self.criar_area_superior(vincular_layout, "Vinculação de Produtos")
         
         # Área de Conteúdo
         content_widget, content_layout = self.criar_area_conteudo(
-            main_layout,
+            vincular_layout,
             subtitulo="Relacione o produto ao mercado"
         )
 
@@ -72,10 +72,10 @@ class CadastroVincularView(BaseLayout, FormularioLayout, SL_BD_Vincular):
 
         # Área Inferior
         self.criar_area_inferior(
-         main_layout,
+         vincular_layout,
          parent_window=self.parent_window,
          mostrar_menu_principal=True,
         # mostrar_voltar_cadastro=True  
 )
 
-        self.setLayout(main_layout)
+        self.setLayout(vincular_layout)

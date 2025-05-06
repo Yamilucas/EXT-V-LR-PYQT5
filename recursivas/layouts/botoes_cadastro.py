@@ -24,7 +24,6 @@ class BotoesCadastro:
         btn_salvar.setStyleSheet(obter_estilo())
         btn_salvar.clicked.connect(self.acao_salvar)
 
-        # Adiciona na ordem: Limpar à esquerda, Salvar à direita
         layout_horizontal.addWidget(btn_limpar)
         layout_horizontal.addWidget(btn_salvar)
 

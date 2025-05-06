@@ -24,8 +24,8 @@ class InicioView(BaseLayout):
     
         botoes = [
             {"texto": "Cadastro", "funcao": lambda: self.parent_window.navigate_to('cadastro')},
-            {"texto": "Visualizar Produtos", "funcao": self.aviso_visualizar_produtos},
-            {"texto": "Comparar Produtos", "funcao": self.aviso_comparar_produtos}
+            {"texto": "Visualizar Produtos", "funcao":lambda: self.parent_window.navigate_to('visualizar_produtos')},
+            {"texto": "Comparar Produtos", "funcao":  lambda: self.parent_window.navigate_to('comparador_precos')}
         ]
 
         BotaoUtils.criar_botoes(

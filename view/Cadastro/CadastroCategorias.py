@@ -15,14 +15,14 @@ class CadastroCategoriasView(BaseLayout, FormularioLayout, SL_BD_Categoria):
         self.initUI()
 
     def initUI(self):
-        main_layout = QVBoxLayout()
+        categoria_layout = QVBoxLayout()
 
         # Área Superior
-        self.criar_area_superior(main_layout, "Cadastro de Categorias")
+        self.criar_area_superior(categoria_layout, "Cadastro de Categorias")
 
         # Área de Conteúdo
         content_widget, content_layout = self.criar_area_conteudo(
-            main_layout,
+            categoria_layout,
             subtitulo="Preencha os dados da categoria"
         )
 
@@ -42,10 +42,10 @@ class CadastroCategoriasView(BaseLayout, FormularioLayout, SL_BD_Categoria):
 
         # Área Inferior
         self.criar_area_inferior(
-         main_layout,
+         categoria_layout,
          parent_window=self.parent_window,
          mostrar_menu_principal=True,
         # mostrar_voltar_cadastro=True  
 )
 
-        self.setLayout(main_layout)
+        self.setLayout(categoria_layout)

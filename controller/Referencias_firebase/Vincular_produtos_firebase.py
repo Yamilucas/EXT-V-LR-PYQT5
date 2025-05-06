@@ -1,47 +1,30 @@
 from firebase_admin import db
-from controller.Conexao import inicializar_firebase
 from model.model_vincular import ProdutoVinculado
 
 class VincularProdutosFirebase:
     def __init__(self):
-        if inicializar_firebase():
-            self.ref_empresas = db.reference('/empresas')
-            self.ref_categorias = db.reference('/categorias')
-            self.ref_produtos = db.reference('/produtos')
-            self.ref_produtos_vinculados = db.reference('/produtos_vinculados')
-        else:
-            raise Exception("Falha na inicialização do Firebase")
-
-    def obter_empresas(self):
-        try:
-            empresas = self.ref_empresas.get()
-            return [(key, empresa['nome_empresa']) for key, empresa in empresas.items()] if empresas else []
-        except Exception as e:
-            print(f"Erro ao buscar empresas: {str(e)}")
-            return []
-
-    def obter_categorias(self):
-        try:
-            categorias = self.ref_categorias.get()
-            return [(key, categoria['nome_categoria']) for key, categoria in categorias.items()] if categorias else []
-        except Exception as e:
-            print(f"Erro ao buscar categorias: {str(e)}")
-            return []
-
-    def obter_produtos_por_categoria(self, categoria_id: str):
-        try:
-            produtos = self.ref_produtos.get()
-            return [(key, produto['nome_produto']) for key, produto in produtos.items() if produto.get('categoria_id') == categoria_id] if produtos else []
-        except Exception as e:
-            print(f"Erro ao buscar produtos: {str(e)}")
-            return []
+        self.ref_produtos_vinculados = db.reference('/produtos_vinculados')
+        self.MAX_EMPRESAS_POR_PRODUTO = 5
 
     def vincular_produto(self, produto_vinculado: ProdutoVinculado) -> bool:
         try:
+            vinculados = self.obter_todos_vinculados()
+            produto_id = produto_vinculado.get_produto_id()
+            empresa_id = produto_vinculado.get_empresa_id()
+
+        
+            vinculacoes_produto = [v for v in vinculados if v[1]['produto_id'] == produto_id]
+            if len(vinculacoes_produto) >= self.MAX_EMPRESAS_POR_PRODUTO:
+                raise ValueError("Limite de 5 empresas por produto atingido!")
+
+           
+            if any(v[1]['empresa_id'] == empresa_id for v in vinculacoes_produto):
+                raise ValueError("Produto já vinculado a esta empresa!")
+
             dados = {
-                'empresa_id': produto_vinculado.get_empresa_id(),
+                'empresa_id': empresa_id,
                 'categoria_id': produto_vinculado.get_categoria_id(),
-                'produto_id': produto_vinculado.get_produto_id(),
+                'produto_id': produto_id,
                 'preco_produto': produto_vinculado.get_preco(),
                 'promocao_produto': produto_vinculado.get_promocao()
             }
@@ -49,8 +32,41 @@ class VincularProdutosFirebase:
             nova_ref = self.ref_produtos_vinculados.push()
             nova_ref.set(dados)
 
-            print(f"Produto vinculado salvo sob ID: {nova_ref.key}")
+            print(f"✅ Produto vinculado salvo sob ID: {nova_ref.key}")
             return True
+
+        except ValueError as ve:
+            print(f"🔴 Validação: {str(ve)}")
+            raise
         except Exception as e:
-            print(f"Erro ao vincular produto: {str(e)}")
+            print(f"🔴 Erro ao vincular produto: {str(e)}")
             return False
+
+  
+    def obter_todos_vinculados(self):
+        try:
+            vinculados = self.ref_produtos_vinculados.get()
+            return [(key, vinculo) for key, vinculo in vinculados.items()] if vinculados else []
+        except Exception as e:
+            print(f"🔴 Erro ao buscar vinculados: {str(e)}")
+            return []
+
+    def obter_empresas_vinculadas(self):
+        vinculados = self.obter_todos_vinculados()
+        return [(key, vinculo['empresa_id']) for key, vinculo in vinculados] if vinculados else []
+
+    def obter_categorias_vinculadas(self):
+        vinculados = self.obter_todos_vinculados()
+        return [(key, vinculo['categoria_id']) for key, vinculo in vinculados] if vinculados else []
+
+    def obter_produtos_vinculados(self):
+        vinculados = self.obter_todos_vinculados()
+        return [(key, vinculo['produto_id']) for key, vinculo in vinculados] if vinculados else []
+
+    def obter_precos_vinculados(self):
+        vinculados = self.obter_todos_vinculados()
+        return [(key, vinculo['preco_produto']) for key, vinculo in vinculados] if vinculados else []
+
+    def obter_promocoes_vinculadas(self):
+        vinculados = self.obter_todos_vinculados()
+        return [(key, vinculo['promocao_produto']) for key, vinculo in vinculados] if vinculados else []

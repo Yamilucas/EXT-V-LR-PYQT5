@@ -16,7 +16,7 @@ class SL_BD_Categoria:
             categoria.set_nome_categoria(nome_categoria)
 
             if self.controller.salvar_categoria(categoria):
-                QMessageBox.information(
+                QMessageBox.information(  
                     self.parent_window,
                     "Sucesso",
                     "Categoria salva com sucesso!"
@@ -26,11 +26,36 @@ class SL_BD_Categoria:
             else:
                 raise Exception("Falha ao comunicar com o servidor")
 
+        except ValueError as ve:
+            mensagem = str(ve)
+            
+            if "Limite máximo" in mensagem:
+                QMessageBox.critical(
+                    self.parent_window,
+                    "Limite Atingido",
+                    "❌ Não é possível cadastrar mais categorias!\nLimite máximo de 10 categorias foi atingido."
+                )
+            elif "Já existe uma categoria" in mensagem:
+                QMessageBox.warning(
+                    self.parent_window,
+                    "Nome Duplicado",
+                    "⚠️ Já existe uma categoria com este nome!\nUtilize um nome diferente."
+                )
+            else:
+                QMessageBox.warning(
+                    self.parent_window,
+                    "Validação",
+                    f"⚠️ {mensagem}"
+                )
+            
+            self.limpar_campos()
+            return False
+                
         except Exception as e:
             QMessageBox.critical(
                 self.parent_window,
                 "Erro",
-                f"Falha ao salvar categoria:\n{str(e)}"
+                f"⛔ Falha ao salvar categoria:\n{str(e)}"
             )
             self.limpar_campos()
             return False

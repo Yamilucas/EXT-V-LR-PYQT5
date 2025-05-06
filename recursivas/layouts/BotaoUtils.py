@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QPushButton
 from PyQt5.QtGui import QFont
-from PyQt5.QtCore import Qt  # Importação adicionada para resolver o erro
+from PyQt5.QtCore import Qt  
 
 class BotaoUtils:
     @staticmethod
@@ -10,5 +10,5 @@ class BotaoUtils:
             botao.setFont(QFont(fonte, tamanho_fonte))
             botao.setStyleSheet(estilo)
             botao.clicked.connect(botao_info["funcao"])
-            layout.addWidget(botao, alignment=Qt.AlignCenter)  # Qt.AlignCenter agora está definido
+            layout.addWidget(botao, alignment=Qt.AlignCenter)  
             layout.addSpacing(espacamento)

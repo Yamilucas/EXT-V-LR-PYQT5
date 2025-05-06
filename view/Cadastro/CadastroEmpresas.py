@@ -17,11 +17,11 @@ class CadastroEmpresasView(BaseLayout, FormularioLayout, SL_BD_Empresas):
         self.initUI()
 
     def initUI(self):
-        main_layout = QVBoxLayout()
-        self.criar_area_superior(main_layout, "Cadastro de Empresas Concorrentes")
+        empresa_layout = QVBoxLayout()
+        self.criar_area_superior(empresa_layout, "Cadastro de Empresas Concorrentes")
 
         content_widget, content_layout = self.criar_area_conteudo(
-            main_layout, subtitulo="Preencha os dados da empresa"
+            empresa_layout, subtitulo="Preencha os dados da empresa"
         )
 
         logo_container = self.gerenciador_imagem.criar_area_imagem()
@@ -44,9 +44,9 @@ class CadastroEmpresasView(BaseLayout, FormularioLayout, SL_BD_Empresas):
         content_layout.addLayout(botoes.criar_botoes())
 
         self.criar_area_inferior(
-         main_layout,
+         empresa_layout,
          parent_window=self.parent_window,
          mostrar_menu_principal=True,
         # mostrar_voltar_cadastro=True  
 )
-        self.setLayout(main_layout)
+        self.setLayout(empresa_layout)

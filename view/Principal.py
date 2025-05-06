@@ -5,7 +5,10 @@ from view.Cadastro.Cadastro import CadastroView
 from view.Cadastro.CadastroCategorias import CadastroCategoriasView
 from view.Cadastro.CadastroEmpresas import CadastroEmpresasView
 from view.Cadastro.CadastroVinculacao import CadastroVincularView
-from view.Cadastro.CadastroProdutosGerais import CadastroProdutosGeraisView
+from view.Cadastro.CadastroProdutos import CadastroProdutosView
+from view.ComparadorPrecos import ComparadorPrecosView
+from controller.Conexao import inicializar_firebase
+from VisualizarProdutosView import VisualizarProdutosView
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -22,8 +25,11 @@ class MainWindow(QMainWindow):
             'cadastro': CadastroView(self),
             'cadastro_categorias': CadastroCategoriasView(self),
             'cadastro_empresas': CadastroEmpresasView(self),
-            'cadastro_produtos': CadastroVincularView(self),
-            'cadastro_produtos_gerais': CadastroProdutosGeraisView(self)
+            'cadastro_produtos': CadastroProdutosView(self),
+            'cadastro_produtos_vinculacao':CadastroVincularView(self),
+            'comparador_precos': ComparadorPrecosView(self),
+            'visualizar_produtos': VisualizarProdutosView(self)
+
         }
         
         for view in self.views.values():
@@ -36,6 +42,8 @@ class MainWindow(QMainWindow):
         self.stacked_widget.setCurrentWidget(self.views[view_name])
 
 if __name__ == "__main__":
+    if not inicializar_firebase():  
+        sys.exit("❌ Falha na conexão com o Firebase. Verifique sua conexão com a internet.")
     app = QApplication(sys.argv)
     window = MainWindow()
     window.showMaximized()
