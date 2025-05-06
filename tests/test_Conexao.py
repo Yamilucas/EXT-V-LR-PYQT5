@@ -1,6 +1,8 @@
+# test_Conexao.py
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import pytest
 from unittest import mock
 import firebase_admin
@@ -36,20 +38,16 @@ def test_inicializar_firebase_nao_reinicializa(monkeypatch):
     monkeypatch.setattr(firebase_admin, '_apps', {'algum_app': True})
 
     # Criar mocks
-    mock_inicializar = mock.Mock()
+    initialize_mock = mock.Mock()
     ref_mock = mock.Mock()
     get_mock = mock.Mock(return_value={})
     ref_mock.get = get_mock
 
-    monkeypatch.setattr(firebase_admin, 'initialize_app', mock_inicializar)
+    monkeypatch.setattr(firebase_admin, 'initialize_app', initialize_mock)
     monkeypatch.setattr(db, 'reference', lambda path: ref_mock)
 
     resultado = inicializar_firebase()
 
     # initialize_app NÃO deve ser chamado
-    mock_inicializar.assert_not_called()
+    initialize_mock.assert_not_called()
     assert resultado == True
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))
