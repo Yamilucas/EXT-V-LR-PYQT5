@@ -1,33 +1,40 @@
 import sys
 import os
-from unittest.mock import MagicMock
 import pytest
+from unittest.mock import patch, MagicMock
 
-# Adiciona a raiz do projeto ao sys.path para garantir que o módulo seja encontrado
+# Garante que o Python enxergue a raiz do projeto
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-# Importa a classe após ajustar o sys.path
-from recursivas.layouts.CadastroEmpresasView import CadastroEmpresasView
+from controller.Referencias_firebase.Cadastro_Empresas_firebase import CadastroEmpresaFirebase
+from model.model_empresas import Empresa
 
 @pytest.fixture
-def setup_view():
-    """Fixture para configurar o ambiente de teste."""
-    view = CadastroEmpresasView()  # Cria uma instância da view
-    view.salvar_empresa = MagicMock()  # Mocka a função de salvar
-    return view
+def empresa_valida():
+    empresa = MagicMock(spec=Empresa)
+    empresa.get_nome_empresa.return_value = "Empresa Nova"
+    empresa.get_logo.return_value = "logo_base64_nova"
+    return empresa
 
-def test_salvar_empresa(setup_view):
-    """Teste para verificar se a empresa foi cadastrada corretamente."""
-    view = setup_view
+@patch('controller.Referencias_firebase.Cadastro_Empresas_firebase.db')
+def test_salvar_empresa_com_sucesso(mock_db, empresa_valida):
+    # Mocks para simular Firebase
+    mock_ref = MagicMock()
+    mock_ref.get.return_value = {}  # Nenhuma empresa cadastrada
+    mock_nova_ref = MagicMock()
+    mock_ref.push.return_value = mock_nova_ref
 
-    # Definir o nome da empresa que será usada no teste
-    nome_empresa = "Empresa Teste"
+    mock_db.reference.return_value = mock_ref
 
-    # Preencher o campo de nome
-    view.campo_nome.setText(nome_empresa)
+    # Executa
+    controller = CadastroEmpresaFirebase()
+    resultado = controller.salvar_empresa(empresa_valida)
 
-    # Simular o clique no botão de salvar
-    view.salvar_empresa(view.campo_nome.text().strip(), view.gerenciador_imagem.imagem_base64)
+    # Verificações
+    assert resultado is True
+    mock_ref.push.assert_called_once()
+    mock_nova_ref.set.assert_called_once()
 
-    # Verificar se a função de salvar foi chamada com o nome da empresa
-    view.salvar_empresa.assert_called_once_with(nome_empresa, view.gerenciador_imagem.imagem_base64)
+
+if __name__ == "__main__":
+    sys.exit(pytest.main([__file__]))
