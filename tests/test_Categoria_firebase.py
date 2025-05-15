@@ -25,3 +25,6 @@ def test_vinculacao_produto_com_mocking(mock_vincular_produto, produto_vinculado
     firebase = VincularProdutosFirebase()
     firebase.vincular_produto(produto_vinculado)
     mock_vincular_produto.assert_called_once_with(produto_vinculado)
+
+if __name__ == "__main__":
+    sys.exit(pytest.main([__file__]))
